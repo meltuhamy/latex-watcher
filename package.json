@@ -1,0 +1,26 @@
+{
+  "name": "latex-watcher",
+  "version": "0.0.1",
+  "author": "Mohamed Eltuhamy <tuhamy@gmail.com>",
+  "description": "a simple file watcher for pdflatex auto-compiling",
+  "contributors": [ 
+    {
+      "name": "Mohamed Eltuhamy",
+      "email": "tuhamy@gmail.com"
+    } 
+  ],
+  "scripts": {
+    "start": "node ./watch.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/meltuhamy/latex-watcher.git"
+  },
+  "dependencies" : {
+    "gaze"   :  "*"
+  },  
+  "license": "MIT",
+  "engines": {
+    "node": ">=0.6"
+  }
+}

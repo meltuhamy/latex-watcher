@@ -18,6 +18,12 @@ Options
     -t, --tex      tex file to compile on changes                      [required]
     -b, --bib      bib file used (required if bibtex is used)        
 
+The currently allowed commands are:
+- latex
+- pdflatex
+- bibtex
+
+
 Example
 -------
 The command below compiles the ```main.tex``` file with latex, then bibtex (using ```main.bib```), then latex again, then pdflatex every time any .tex files are changed, added or removed.

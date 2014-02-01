@@ -40,6 +40,6 @@ Notes
 -----
 Installing dependencies will create a node_modules folder. You can add this to your .gitignore to avoid it being versioned if you wish.
 
-The project uses [gaze](https://github.com/shama/gaze) for file watching and [optimist](https://github.com/substack/node-optimist) for awesome command-line argument stuff.
+The project uses [gaze](https://github.com/shama/gaze) for file watching, [colors](https://github.com/Marak/colors.js) for, er... colors, and [optimist](https://github.com/substack/node-optimist) for awesome command-line argument stuff.
 
 I've only tested and implemented this based on my own personal use. It currently works for me with Linux and OSX.

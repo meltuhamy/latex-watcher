@@ -1,6 +1,7 @@
 var gaze = require('gaze'),
     sys   = require('sys'),
     spawn = require('child_process').spawn,
+    colors = require('colors'),
     argv = require('optimist')
            .usage('Watch latex files and compile them.\nUsage: $0')
            .demand('c')
@@ -16,30 +17,33 @@ var gaze = require('gaze'),
     bibName = argv.bib,
     commands = argv.c,
 
-    compileBibtex = function(cb){
-      process.stdout.write('bibtex ');
-      var bibtex      = spawn('bibtex', [bibName]);
-      bibtex.on('exit', function (code) {
-        process.stdout.write((code==0 ? '✓' : '×') + '\n');
-        if(cb != undefined) cb();
-      });
-    },
 
+    lastError = '',
     displayErrors = function(cb){
       //grep -n -A 1 ^! main.log
       var logfilename = texName.split("/").pop().split('.')[0];
-      var grep = spawn('grep', ['-n', '-A', '1', '^!', logfilename+'.log']);
-      grep.stdout.pipe(process.stdout);
+      var grep = spawn('grep', ['-A', '1', '^!', logfilename+'.log']);
+
+      grep.stdout.on('data', function(data) {
+        var errorString = data.toString();
+        if(errorString != '' && errorString != lastError){
+          lastError = errorString;
+          console.error("  "+lastError.replace("\n","\n  ").grey);
+        }
+      });
+      // grep.stdout.pipe(process.stdout);
       grep.on('exit', function(code){
         if(cb!=undefined) cb();
       });
+
+      
     },
 
     compileLatex = function(cb){
-      process.stdout.write('latex ');
+      process.stdout.write('  » latex');
       var latex      = spawn('latex', ['-interaction=nonstopmode',texName]);
       latex.on('exit', function (code) {
-        process.stdout.write((code==0 ? '✓' : '×') + '\n');
+        process.stdout.write((code==0 ? '\r  ✓ latex'.green : '\r  × latex'.red) + '\n');
         if(code != 0){
           displayErrors(cb);
         } else if(cb != undefined) cb();
@@ -47,13 +51,22 @@ var gaze = require('gaze'),
     },
 
     compilePDFLatex = function(cb){
-      process.stdout.write('pdflatex ');
+      process.stdout.write('  » pdflatex');
       var pdflatex      = spawn('pdflatex', ['-interaction=nonstopmode',texName]);
       pdflatex.on('exit', function (code) {
-        process.stdout.write((code==0 ? '✓' : '×') + '\n');
+        process.stdout.write((code==0 ? '\r  ✓ pdflatex'.green : '\r  × pdflatex'.red) + '\n');
         if(code != 0){
           displayErrors(cb);
         } else if(cb != undefined) cb();
+      });
+    },
+
+    compileBibtex = function(cb){
+      process.stdout.write('  » bibtex');
+      var bibtex      = spawn('bibtex', [bibName]);
+      bibtex.on('exit', function (code) {
+        process.stdout.write((code==0 ? '\r  ✓ bibtex'.green : '\r  × bibtex'.red) + '\n');
+        if(cb != undefined) cb();
       });
     },
 
@@ -88,20 +101,26 @@ var gaze = require('gaze'),
         getNextCallback(0)();
       };
     },
+    cwd = process.cwd(),
+    compileAll = function(event, filepath){
+      lastError=''; 
+      var d = new Date(), h = d.getHours(), m = d.getMinutes(), s = d.getSeconds(),
+          timeString = (h<10?'0':'')+h+":"+(m<10?'0':'')+m+":"+(s<10?'0':'')+s,
+          filePath = filepath != undefined ? '.'+filepath.split(cwd).pop() : '';
+      if(event != undefined){
+        console.log(("\n» "+filePath+" "+event+" at "+timeString).yellow);
+      } else {
+        console.log("» Compiling".yellow);
+      }
 
-    compileAll = getCommandChain(commands);
+      getCommandChain(commands)(); 
+    };
 
-console.log("Watching");
+// console.log("Watching");
 // compile first now.
 compileAll();
 
 // Watch all .tex files/dirs in process.cwd()
 gaze(['**/*.tex', '**/*.bib'], function(err, watcher) {
-
-  // On changed/added/deleted
-  this.on('all', function(event, filepath) {
-    console.log(filepath + ' was ' + event);
-    compileAll();
-  });
-
+  this.on('all', compileAll);
 });

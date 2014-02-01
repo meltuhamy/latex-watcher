@@ -18,7 +18,8 @@
   },
   "dependencies" : {
     "gaze"   :  "*",
-    "optimist" : "*"
+    "optimist" : "*",
+    "colors" : "*"
   },  
   "license": "MIT",
   "engines": {

@@ -17,7 +17,8 @@
     "url": "https://github.com/meltuhamy/latex-watcher.git"
   },
   "dependencies" : {
-    "gaze"   :  "*"
+    "gaze"   :  "*",
+    "optimist" : "*"
   },  
   "license": "MIT",
   "engines": {

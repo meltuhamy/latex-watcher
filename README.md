@@ -6,10 +6,9 @@ A (very) simple latex file watcher to auto-compile tex files.
 Usage
 -----
 
-1. You will need [node.js](http://nodejs.org/download/)
-2. Copy ```watch.js``` and ```package.json``` into your latex project folder, where your main ```.tex``` file is.
-3. In your latex project folder, install node dependencies by running ```npm install```.
-4. Start the watcher script by running ```node watch.js```. Check options below:
+1. You will need [node.js](http://nodejs.org/download/) version >= 0.8 (check with ```node -v```).
+2. Install latex-watcher using npm: ```npm install -g latex-watcher```
+3. Run ```latex-watcher``` from your latex project directory. Check options below:
 
 Options
 -------
@@ -38,7 +37,6 @@ The command below compiles the ```main.tex``` file with latex, then bibtex (usin
 
 Notes
 -----
-Installing dependencies will create a node_modules folder. You can add this to your .gitignore to avoid it being versioned if you wish.
 
 The project uses [gaze](https://github.com/shama/gaze) for file watching, [colors](https://github.com/Marak/colors.js) for, er... colors, and [optimist](https://github.com/substack/node-optimist) for awesome command-line argument stuff.
 

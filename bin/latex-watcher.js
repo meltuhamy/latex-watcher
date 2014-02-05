@@ -26,11 +26,12 @@ var gaze = require('gaze'),
     sys   = require('sys'),
     spawn = require('child_process').spawn,
     colors = require('colors'),
+    fs = require('fs'),
     argv = require('optimist')
            .usage('Watch latex files and compile them.\nUsage: $0')
            .demand('c')
            .alias('c', 'command')
-           .describe('c', 'list of commands to run. e.g latex,bibtex,pdflatex')
+           .describe('c', 'list of commands to run. e.g latex,bibtex,pdflatex,cleanup')
            .demand('t')
            .alias('t', 'tex')
            .describe('t', 'tex file to compile on changes')
@@ -41,6 +42,11 @@ var gaze = require('gaze'),
     bibName = argv.bib,
     commands = argv.c,
 
+    tempFiles = ['.blg','.bbl','.aux','.log','.brf','.nlo','.out','.dvi','.ps',
+      '.lof','.toc','.fls','.fdb_latexmk','.pdfsync','.synctex.gz','.ind','.ilg','.idx']
+      .map(function(extension) {
+        return texName + extension;
+      }),
 
     lastError = '',
     displayErrors = function(cb){
@@ -60,7 +66,7 @@ var gaze = require('gaze'),
         if(cb!=undefined) cb();
       });
 
-      
+
     },
 
     compileLatex = function(cb){
@@ -94,24 +100,29 @@ var gaze = require('gaze'),
       });
     },
 
+    cleanUp = function(cb){
+      process.stdout.write('  » cleanup');
+      tempFiles.forEach(function(file) {
+        fs.existsSync(file) && fs.unlink(file);
+      });
+      process.stdout.write('\r  ✓ cleanup'.green + '\n');
+      if(cb != undefined) cb();
+    },
+
     getCommandChain = function(csvCommands, start, end){
       var commands = csvCommands.split(',');
-
+      var cmdMap = {
+        latex: compilePDFLatex,
+        pdflatex: compilePDFLatex,
+        bibtex: compileBibtex,
+        cleanup: cleanUp
+      };
 
       var getNextCallback = function(i){
-        // console.log("Genenerating "+i+": "+commands[i]);
         if(i < commands.length){
-          if(commands[i] === 'latex'){
+          if (commands[i] in cmdMap){
             return function(){
-              compileLatex(getNextCallback(i+1));
-            };
-          } else if (commands[i] === 'pdflatex') {
-            return function(){
-              compilePDFLatex(getNextCallback(i+1));
-            };
-          } else if (commands[i] === 'bibtex') {
-            return function(){
-              compileBibtex(getNextCallback(i+1));
+              cmdMap[commands[i]](getNextCallback(i+1));
             };
           }
         } else {
@@ -127,7 +138,7 @@ var gaze = require('gaze'),
     },
     cwd = process.cwd(),
     compileAll = function(event, filepath){
-      lastError=''; 
+      lastError='';
       var d = new Date(), h = d.getHours(), m = d.getMinutes(), s = d.getSeconds(),
           timeString = (h<10?'0':'')+h+":"+(m<10?'0':'')+m+":"+(s<10?'0':'')+s,
           filePath = filepath != undefined ? '.'+filepath.split(cwd).pop() : '';
@@ -137,7 +148,7 @@ var gaze = require('gaze'),
         console.log("» Compiling".yellow);
       }
 
-      getCommandChain(commands)(); 
+      getCommandChain(commands)();
     };
 
 // compile first now.

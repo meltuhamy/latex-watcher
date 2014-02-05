@@ -111,25 +111,18 @@ var gaze = require('gaze'),
 
     getCommandChain = function(csvCommands, start, end){
       var commands = csvCommands.split(',');
+      var cmdMap = {
+        latex: compilePDFLatex,
+        pdflatex: compilePDFLatex,
+        bibtex: compileBibtex,
+        cleanup: cleanUp
+      };
 
       var getNextCallback = function(i){
-        // console.log("Genenerating "+i+": "+commands[i]);
         if(i < commands.length){
-          if(commands[i] === 'latex'){
+          if (commands[i] in cmdMap){
             return function(){
-              compileLatex(getNextCallback(i+1));
-            };
-          } else if (commands[i] === 'pdflatex') {
-            return function(){
-              compilePDFLatex(getNextCallback(i+1));
-            };
-          } else if (commands[i] === 'bibtex') {
-            return function(){
-              compileBibtex(getNextCallback(i+1));
-            };
-          } else if (commands[i] === 'cleanup') {
-            return function(){
-              cleanUp(getNextCallback(i+1));
+              cmdMap[commands[i]](getNextCallback(i+1));
             };
           }
         } else {

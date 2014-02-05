@@ -112,7 +112,7 @@ var gaze = require('gaze'),
     getCommandChain = function(csvCommands, start, end){
       var commands = csvCommands.split(',');
       var cmdMap = {
-        latex: compilePDFLatex,
+        latex: compileLatex,
         pdflatex: compilePDFLatex,
         bibtex: compileBibtex,
         cleanup: cleanUp

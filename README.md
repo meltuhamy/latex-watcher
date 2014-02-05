@@ -15,13 +15,13 @@ Options
 
     -c, --command  list of commands to run. e.g latex,bibtex,pdflatex  [required]  [default: "pdflatex"]
     -t, --tex      tex file to compile on changes                      [required]
-    -b, --bib      bib file used (required if bibtex is used)        
+    -b, --bib      bib file used (required if bibtex is used)
 
 The currently allowed commands are:
 - latex
 - pdflatex
 - bibtex
-
+- cleanup (removes temporary latex files after compilation)
 
 Example
 -------

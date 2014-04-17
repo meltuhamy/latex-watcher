@@ -37,6 +37,7 @@ var gaze = require('gaze'),
            .describe('t', 'tex file to compile on changes')
            .alias('b','bib')
            .describe('b', 'bib file used (required if bibtex is used)')
+           .describe('once', 'only run the commands once (no watching)')
            .default('c', 'pdflatex').argv,
     texName = argv.t,
     bibName = argv.bib,
@@ -109,13 +110,22 @@ var gaze = require('gaze'),
       if(cb != undefined) cb();
     },
 
+    exit = function(){
+      if(lastError){
+        process.exit(code=1);
+      } else {
+        process.exit(code=0);
+      }
+    },
+
     getCommandChain = function(csvCommands, start, end){
       var commands = csvCommands.split(',');
       var cmdMap = {
         latex: compileLatex,
         pdflatex: compilePDFLatex,
         bibtex: compileBibtex,
-        cleanup: cleanUp
+        cleanup: cleanUp,
+        exit: exit
       };
 
       var getNextCallback = function(i){
@@ -127,7 +137,7 @@ var gaze = require('gaze'),
           }
         } else {
           // do this in the NEXT callback!
-          if(end!=undefined) end();
+          if(end!=undefined) return end;
         }
       };
 
@@ -147,14 +157,17 @@ var gaze = require('gaze'),
       } else {
         console.log("» Compiling".yellow);
       }
-
       getCommandChain(commands)();
     };
 
-// compile first now.
-compileAll();
 
-// Watch all .tex files/dirs in process.cwd()
-gaze(['**/*.tex', '**/*.bib'], function(err, watcher) {
-  this.on('all', compileAll);
-});
+if(!argv.once){
+  compileAll();
+  // Watch all .tex files/dirs in process.cwd()
+  gaze(['**/*.tex', '**/*.bib'], function(err, watcher) {
+    this.on('all', compileAll);
+  });
+} else {
+  commands = commands.concat(',exit');
+  compileAll();
+}

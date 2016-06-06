@@ -35,12 +35,9 @@ var gaze = require('gaze'),
            .demand('t')
            .alias('t', 'tex')
            .describe('t', 'tex file to compile on changes')
-           .alias('b','bib')
-           .describe('b', 'bib file used (required if bibtex is used)')
            .describe('once', 'only run the commands once (no watching)')
            .default('c', 'pdflatex').argv,
     texName = argv.t,
-    bibName = argv.bib,
     commands = argv.c,
 
     tempFiles = ['.blg','.bbl','.aux','.log','.brf','.nlo','.out','.dvi','.ps',
@@ -94,7 +91,7 @@ var gaze = require('gaze'),
 
     compileBibtex = function(cb){
       process.stdout.write('  » bibtex');
-      var bibtex      = spawn('bibtex', [bibName]);
+      var bibtex      = spawn('bibtex', [texName]);
       bibtex.on('exit', function (code) {
         process.stdout.write((code==0 ? '\r  ✓ bibtex'.green : '\r  × bibtex'.red) + '\n');
         if(cb != undefined) cb();

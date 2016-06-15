@@ -7,7 +7,11 @@
     {
       "name": "Mohamed Eltuhamy",
       "email": "tuhamy@gmail.com"
-    } 
+    },
+    {
+      "name": "Nico Ring",
+      "email": "ringnico@web.de"
+    }
   ],
   "repository": {
     "type": "git",

@@ -87,7 +87,7 @@ var gaze = require('gaze'),
         args.push('-shell-escape')
       }
       args.push(texName)
-      var pdflatex      = spawn('pdflatex', args]);
+      var pdflatex      = spawn('pdflatex', args);
       pdflatex.on('exit', function (code) {
         process.stdout.write((code==0 ? '\r  ✓ pdflatex'.green : '\r  × pdflatex'.red) + '\n');
         if(code != 0){

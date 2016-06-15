@@ -36,9 +36,11 @@ var gaze = require('gaze'),
            .alias('t', 'tex')
            .describe('t', 'tex file to compile on changes')
            .describe('once', 'only run the commands once (no watching)')
+           .describe('shell-escape', 'invoke pdflatex with shell-escape')
+           .alias('e', 'shell-escape')
            .default('c', 'pdflatex').argv,
     texName = argv.t,
-    commands = argv.c,
+    commands = argv.c
 
     tempFiles = ['.blg','.bbl','.aux','.log','.brf','.nlo','.out','.dvi','.ps',
       '.lof','.toc','.fls','.fdb_latexmk','.pdfsync','.synctex.gz','.ind','.ilg','.idx']
@@ -80,7 +82,12 @@ var gaze = require('gaze'),
 
     compilePDFLatex = function(cb){
       process.stdout.write('  » pdflatex');
-      var pdflatex      = spawn('pdflatex', ['-interaction=nonstopmode',texName]);
+      var args = ['-interaction=nonstopmode']
+      if (argv.e) {
+        args.push('-shell-escape')
+      }
+      args.push(texName)
+      var pdflatex      = spawn('pdflatex', args]);
       pdflatex.on('exit', function (code) {
         process.stdout.write((code==0 ? '\r  ✓ pdflatex'.green : '\r  × pdflatex'.red) + '\n');
         if(code != 0){

@@ -71,7 +71,12 @@ var gaze = require('gaze'),
 
     compileLatex = function(cb){
       process.stdout.write('  » latex');
-      var latex      = spawn('latex', ['-interaction=nonstopmode',texName]);
+      var args = ['-interaction=nonstopmode']
+      if (argv.e) {
+        args.push('-shell-escape')
+      }
+      args.push(texName)
+      var latex      = spawn('latex', args);
       latex.on('exit', function (code) {
         process.stdout.write((code==0 ? '\r  ✓ latex'.green : '\r  × latex'.red) + '\n');
         if(code != 0){
@@ -98,7 +103,12 @@ var gaze = require('gaze'),
 
     compileBibtex = function(cb){
       process.stdout.write('  » bibtex');
-      var bibtex      = spawn('bibtex', [texName]);
+      var args = []
+      if (argv.e) {
+        args.push('-shell-escape')
+      }
+      args.push(texName)
+      var bibtex      = spawn('bibtex', args);
       bibtex.on('exit', function (code) {
         process.stdout.write((code==0 ? '\r  ✓ bibtex'.green : '\r  × bibtex'.red) + '\n');
         if(cb != undefined) cb();

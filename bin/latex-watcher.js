@@ -103,12 +103,7 @@ var gaze = require('gaze'),
 
     compileBibtex = function(cb){
       process.stdout.write('  » bibtex');
-      var args = []
-      if (argv.e) {
-        args.push('-shell-escape')
-      }
-      args.push(texName)
-      var bibtex      = spawn('bibtex', args);
+      var bibtex      = spawn('bibtex', [texName]);
       bibtex.on('exit', function (code) {
         process.stdout.write((code==0 ? '\r  ✓ bibtex'.green : '\r  × bibtex'.red) + '\n');
         if(cb != undefined) cb();

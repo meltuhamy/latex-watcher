@@ -38,6 +38,8 @@ var gaze = require('gaze'),
            .describe('once', 'only run the commands once (no watching)')
            .describe('shell-escape', 'invoke pdflatex with shell-escape')
            .alias('e', 'shell-escape')
+           .describe('endings', 'additional filendings to watch')
+           .describe('subfolders', 'additional subfolders to watch')
            .default('c', 'pdflatex').argv,
     texName = argv.t,
     commands = argv.c
@@ -170,10 +172,22 @@ var gaze = require('gaze'),
     };
 
 
-if(!argv.once){
+if(!argv.once) {
   compileAll();
   // Watch all .tex files/dirs in process.cwd()
-  gaze(['**/*.tex', '**/*.bib'], function(err, watcher) {
+
+  var watchEndings = argv.endings ?
+    argv.endings.split(',').map(function(ending) { return '**/*.' + ending }) :
+    [];
+  var watchDirectories = argv.subfolders ? 
+    argv.subfolders.split(',').map(function(subfolder) { return subfolder + '/**/*' }) : 
+    [];
+
+  var watchPaths = ['**/*.tex', '**/*.bib']
+    .concat(watchEndings)
+    .concat(watchDirectories)
+
+  gaze(watchPaths, function(err, watcher) {
     this.on('all', compileAll);
   });
 } else {

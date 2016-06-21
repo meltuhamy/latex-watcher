@@ -35,13 +35,14 @@ var gaze = require('gaze'),
            .demand('t')
            .alias('t', 'tex')
            .describe('t', 'tex file to compile on changes')
-           .alias('b','bib')
-           .describe('b', 'bib file used (required if bibtex is used)')
            .describe('once', 'only run the commands once (no watching)')
+           .describe('shell-escape', 'invoke pdflatex with shell-escape')
+           .alias('e', 'shell-escape')
+           .describe('endings', 'additional filendings to watch')
+           .describe('subfolders', 'additional subfolders to watch')
            .default('c', 'pdflatex').argv,
     texName = argv.t,
-    bibName = argv.bib,
-    commands = argv.c,
+    commands = argv.c
 
     tempFiles = ['.blg','.bbl','.aux','.log','.brf','.nlo','.out','.dvi','.ps',
       '.lof','.toc','.fls','.fdb_latexmk','.pdfsync','.synctex.gz','.ind','.ilg','.idx']
@@ -72,7 +73,12 @@ var gaze = require('gaze'),
 
     compileLatex = function(cb){
       process.stdout.write('  » latex');
-      var latex      = spawn('latex', ['-interaction=nonstopmode',texName]);
+      var args = ['-interaction=nonstopmode']
+      if (argv.e) {
+        args.push('-shell-escape')
+      }
+      args.push(texName)
+      var latex      = spawn('latex', args);
       latex.on('exit', function (code) {
         process.stdout.write((code==0 ? '\r  ✓ latex'.green : '\r  × latex'.red) + '\n');
         if(code != 0){
@@ -83,7 +89,12 @@ var gaze = require('gaze'),
 
     compilePDFLatex = function(cb){
       process.stdout.write('  » pdflatex');
-      var pdflatex      = spawn('pdflatex', ['-interaction=nonstopmode',texName]);
+      var args = ['-interaction=nonstopmode']
+      if (argv.e) {
+        args.push('-shell-escape')
+      }
+      args.push(texName)
+      var pdflatex      = spawn('pdflatex', args);
       pdflatex.on('exit', function (code) {
         process.stdout.write((code==0 ? '\r  ✓ pdflatex'.green : '\r  × pdflatex'.red) + '\n');
         if(code != 0){
@@ -94,7 +105,7 @@ var gaze = require('gaze'),
 
     compileBibtex = function(cb){
       process.stdout.write('  » bibtex');
-      var bibtex      = spawn('bibtex', [bibName]);
+      var bibtex      = spawn('bibtex', [texName]);
       bibtex.on('exit', function (code) {
         process.stdout.write((code==0 ? '\r  ✓ bibtex'.green : '\r  × bibtex'.red) + '\n');
         if(cb != undefined) cb();
@@ -161,10 +172,22 @@ var gaze = require('gaze'),
     };
 
 
-if(!argv.once){
+if(!argv.once) {
   compileAll();
   // Watch all .tex files/dirs in process.cwd()
-  gaze(['**/*.tex', '**/*.bib'], function(err, watcher) {
+
+  var watchEndings = argv.endings ?
+    argv.endings.split(',').map(function(ending) { return '**/*.' + ending }) :
+    [];
+  var watchDirectories = argv.subfolders ? 
+    argv.subfolders.split(',').map(function(subfolder) { return subfolder + '/**/*' }) : 
+    [];
+
+  var watchPaths = ['**/*.tex', '**/*.bib']
+    .concat(watchEndings)
+    .concat(watchDirectories)
+
+  gaze(watchPaths, function(err, watcher) {
     this.on('all', compileAll);
   });
 } else {
